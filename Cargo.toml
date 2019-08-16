@@ -1,0 +1,8 @@
+[package]
+name = "procon-reconnect"
+version = "0.1.0"
+authors = ["= <bo20202@yandex.ru>"]
+edition = "2018"
+
+[dependencies]
+winapi = {git = "https://github.com/retep998/winapi-rs", features = ["bluetoothapis"], branch = "0.3"}

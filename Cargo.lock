@@ -1,0 +1,30 @@
+[[package]]
+name = "procon-reconnect"
+version = "0.1.0"
+dependencies = [
+ "winapi 0.3.7 (git+https://github.com/retep998/winapi-rs?branch=0.3)",
+]
+
+[[package]]
+name = "winapi"
+version = "0.3.7"
+source = "git+https://github.com/retep998/winapi-rs?branch=0.3#fd7d8f39111e503639bf406d3f12183ddb9f72f6"
+dependencies = [
+ "winapi-i686-pc-windows-gnu 0.4.0 (git+https://github.com/retep998/winapi-rs?branch=0.3)",
+ "winapi-x86_64-pc-windows-gnu 0.4.0 (git+https://github.com/retep998/winapi-rs?branch=0.3)",
+]
+
+[[package]]
+name = "winapi-i686-pc-windows-gnu"
+version = "0.4.0"
+source = "git+https://github.com/retep998/winapi-rs?branch=0.3#fd7d8f39111e503639bf406d3f12183ddb9f72f6"
+
+[[package]]
+name = "winapi-x86_64-pc-windows-gnu"
+version = "0.4.0"
+source = "git+https://github.com/retep998/winapi-rs?branch=0.3#fd7d8f39111e503639bf406d3f12183ddb9f72f6"
+
+[metadata]
+"checksum winapi 0.3.7 (git+https://github.com/retep998/winapi-rs?branch=0.3)" = "<none>"
+"checksum winapi-i686-pc-windows-gnu 0.4.0 (git+https://github.com/retep998/winapi-rs?branch=0.3)" = "<none>"
+"checksum winapi-x86_64-pc-windows-gnu 0.4.0 (git+https://github.com/retep998/winapi-rs?branch=0.3)" = "<none>"
