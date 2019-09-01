@@ -1,0 +1,8 @@
+[package]
+name = "winapi_bluetooth"
+version = "0.1.0"
+authors = ["= <bo20202@yandex.ru>"]
+edition = "2018"
+
+[dependencies]
+winapi = {version = "0.3.8", features = ["bluetoothapis", "handleapi", "winerror"]}

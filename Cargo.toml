@@ -5,4 +5,5 @@ authors = ["= <bo20202@yandex.ru>"]
 edition = "2018"
 
 [dependencies]
-winapi = {git = "https://github.com/retep998/winapi-rs", features = ["bluetoothapis"], branch = "0.3"}
+winapi_bluetooth = {path = "winapi_bluetooth"}
+clap = "2.33.0"
