@@ -38,7 +38,7 @@ impl BluetoothRadioHandle {
     
         match result {
             ERROR_SUCCESS => Ok(info),
-            _ => Err(last_error())
+            _ => Err(io::Error::from_raw_os_error(result as i32))
         }
     }
 }
