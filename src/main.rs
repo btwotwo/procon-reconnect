@@ -5,8 +5,12 @@ fn main() {
 
     for val in search {
         let test = val.unwrap();
-        let name = test.get_radio_info().unwrap().name().to_string_lossy();
+        let info = test.get_radio_info().unwrap();
+        let name = info.name();
 
-        println!("device name is {}", name);
+        let another_name = info.name();
+
+        println!("device name is {}", name.to_string_lossy());
+        println!("test {}", another_name.to_string_lossy());
     }
 }
