@@ -72,3 +72,4 @@ impl BluetoothDeviceInfo {
         OsString::from_wide(&self.0.szName)
     }
 }
+
