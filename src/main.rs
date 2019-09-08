@@ -1,23 +1,42 @@
+mod settings;
+use settings::Settings;
 use winapi_bluetooth::device::*;
-use winapi_bluetooth::radio::BluetoothRadioSearch;
 
-fn main() {
-    let search_params = BluetoothDeviceSearchParams::new(None).with_return_all();
+fn main() -> std::io::Result<()> {
+    let settings = Settings::init()?;
+    let mut device = get_device_info(&settings);
 
-    let search = BluetoothDeviceSearch::new(search_params);
+    println!("{:?}", device);
 
-    for val in search {
-        let test = val.unwrap();
-        println!("{:?}", test);
+    if device.is_connected() {
+        eprint!("Procon is already connected. Exiting.");
     }
 
-    // let search = BluetoothRadioSearch::new();
+    if device.is_remembered() {
+        device.remove_device()?;
+    }
+    
+    device.authenticate_device(None)?;
 
-    // for val in search {
-    //     let test = val.unwrap();
-    //     let info = test.get_radio_info().unwrap();
-    //     let name = info.name();
+    //todo https://docs.microsoft.com/en-us/windows/win32/api/bluetoothapis/nf-bluetoothapis-bluetoothenumerateinstalledservices
+    //todo https://docs.microsoft.com/en-us/windows/win32/api/bluetoothapis/nf-bluetoothapis-bluetoothsetservicestate
 
-    //     println!("radio name is {}", name.to_string_lossy());
-    // }
+    Ok(())
+}
+
+fn get_device_info(settings: &Settings) -> BluetoothDeviceInfo {
+    let params = BluetoothDeviceSearchParams::new(None).with_return_all();
+
+    let search = BluetoothDeviceSearch::new(params)
+        .map(|x| x.unwrap())
+        .find(|x| x.address() == settings.procon_address);
+
+    match search {
+        None => {
+            eprint!("Procon address is not valid. Try to remove settings.json.");
+            std::process::exit(1);
+        }
+
+        Some(device) => device,
+    }
 }

@@ -90,6 +90,48 @@ impl BluetoothDeviceInfo {
     pub fn address(&self) -> u64 {
         self.0.Address
     }
+
+
+    pub fn remove_device(&mut self) -> io::Result<()> {
+        match self.is_remembered() {
+            false => Err(io::Error::new(io::ErrorKind::InvalidInput, "Device is not remembered")),
+            true => match unsafe {bluetoothapis::BluetoothRemoveDevice(&self.address())} {
+                ERROR_SUCCESS => {
+                    self.0.fConnected = FALSE;
+                    self.0.fRemembered = FALSE;
+                    self.0.fAuthenticated = FALSE;
+                    Ok(())
+                },
+                _ => Err(last_error())
+            }
+        }
+
+    }
+
+    pub fn authenticate_device(&mut self, handle: Option<BluetoothRadioHandle>) -> io::Result<()> {
+        use widestring::U16String;
+        use std::convert::TryInto;
+        
+        let mut passwd = U16String::from_str("0000").into_vec();
+
+        let handle = match handle {
+            Some(handle) => handle.0, 
+            None => unsafe {std::mem::zeroed()}
+        };
+
+        match self.is_authenticated() {
+            true => Err(io::Error::new(io::ErrorKind::InvalidInput, "Device is already connected")),
+            false => match unsafe {bluetoothapis::BluetoothAuthenticateDevice(
+                std::ptr::null_mut(), 
+                handle, 
+                &mut self.0,
+                passwd.as_mut_ptr(),
+                passwd.len() as u32)} {    
+                    ERROR_SUCCESS => Ok(()),
+                    val => Err(io::Error::from_raw_os_error(val.try_into().unwrap()))
+                }
+        }
+    }
 }
 
 impl std::fmt::Debug for BluetoothDeviceInfo {

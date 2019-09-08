@@ -6,4 +6,7 @@ edition = "2018"
 
 [dependencies]
 winapi_bluetooth = {path = "winapi_bluetooth"}
-clap = "2.33.0"
+serde = { version = "1.0", features = ["derive"]}
+serde_json = "1.0"
+promptly = "0.1.5"
+
