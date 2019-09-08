@@ -1,13 +1,12 @@
 use super::winapi_imports::*;
+use super::last_error;
 use winapi::um::bluetoothapis::{HBLUETOOTH_RADIO_FIND, BLUETOOTH_RADIO_INFO};
 use std::io;
 
 use std::ffi::OsString;
 use std::os::windows::ffi::OsStringExt;
 
-const ERROR_NO_MORE_ITEMS: i32 = winapi::shared::winerror::ERROR_NO_MORE_ITEMS as i32;
-
-pub struct BluetoothRadioHandle(HANDLE);
+pub struct BluetoothRadioHandle(pub HANDLE);
 pub struct BluetoothRadioInfo(BLUETOOTH_RADIO_INFO);
 
 
@@ -159,8 +158,4 @@ impl Drop for BluetoothRadioSearch {
             panic!("Failed to close search! Error: {}", last_error())
         }
     }
-}
-
-fn last_error() -> io::Error {
-    io::Error::last_os_error()
 }
