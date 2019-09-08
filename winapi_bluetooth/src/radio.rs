@@ -125,7 +125,7 @@ impl BluetoothRadioSearch {
         } else {
             let result = unsafe { BluetoothFindNextRadio(self.search, &mut radio_handle) };
 
-            if result == TRUE {
+            if result != FALSE {
                 Ok(BluetoothRadioHandle(radio_handle))
             } else {
                 Err(last_error())

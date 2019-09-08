@@ -72,15 +72,15 @@ pub struct BluetoothDeviceInfo(BLUETOOTH_DEVICE_INFO);
 
 impl BluetoothDeviceInfo {
     pub fn is_connected(&self) -> bool {
-        self.0.fConnected == TRUE
+        self.0.fConnected != FALSE
     }
 
     pub fn is_remembered(&self) -> bool {
-        self.0.fRemembered == TRUE
+        self.0.fRemembered != FALSE
     }
 
     pub fn is_authenticated(&self) -> bool {
-        self.0.fAuthenticated == TRUE
+        self.0.fAuthenticated != FALSE
     }
 
     pub fn name(&self) -> OsString {
@@ -146,7 +146,7 @@ impl BluetoothDeviceSearch {
             self.find_first()
         } else {
             let result = unsafe {BluetoothFindNextDevice(self.search, &mut info)};
-            if result == TRUE {
+            if result != FALSE {
                 Ok(BluetoothDeviceInfo(info))
             } else {
                 Err(last_error())
