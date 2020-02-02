@@ -49,7 +49,7 @@ fn first_time_launch() -> Settings {
 
     let devices =
         BluetoothDeviceSearch::new(BluetoothDeviceSearchParams::new(None).with_return_all());
-    
+
     let devices: Vec<BluetoothDeviceInfo> = devices.map(|x| x.unwrap()).collect();
 
     println!("Looks like that application is launched for the first time. Let's do some basic setup and save it.\n");

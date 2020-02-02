@@ -1,10 +1,12 @@
 mod settings;
 use settings::Settings;
 use winapi_bluetooth::device::*;
+use winapi_bluetooth::radio::*;
 
 fn main() -> std::io::Result<()> {
     let settings = Settings::init()?;
     let mut device = get_device_info(&settings);
+    let radio = BluetoothRadioSearch::new().nth(0).unwrap()?;
 
     println!("{:?}", device);
 
@@ -15,11 +17,15 @@ fn main() -> std::io::Result<()> {
     if device.is_remembered() {
         device.remove_device()?;
     }
-    
-    device.authenticate_device(None)?;
 
-    //todo https://docs.microsoft.com/en-us/windows/win32/api/bluetoothapis/nf-bluetoothapis-bluetoothenumerateinstalledservices
-    //todo https://docs.microsoft.com/en-us/windows/win32/api/bluetoothapis/nf-bluetoothapis-bluetoothsetservicestate
+    device.authenticate_device(Some(&radio))?;
+
+    let service_count = device.count_installed_services()?;
+
+    if service_count == 0 {
+        device.enable_hid_service(&radio)?;
+    }
+
 
     Ok(())
 }

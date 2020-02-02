@@ -108,7 +108,7 @@ impl BluetoothDeviceInfo {
 
     }
 
-    pub fn authenticate_device(&mut self, handle: Option<BluetoothRadioHandle>) -> io::Result<()> {
+    pub fn authenticate_device(&mut self, handle: Option<&BluetoothRadioHandle>) -> io::Result<()> {
         use widestring::U16String;
         use std::convert::TryInto;
         
@@ -130,6 +130,36 @@ impl BluetoothDeviceInfo {
                     ERROR_SUCCESS => Ok(()),
                     val => Err(io::Error::from_raw_os_error(val.try_into().unwrap()))
                 }
+        }
+    }
+
+    pub fn count_installed_services(&self) -> io::Result<u32> {
+        let mut count = 0;
+        let result = unsafe {bluetoothapis::BluetoothEnumerateInstalledServices(
+            std::mem::zeroed(), 
+            &self.0, 
+            &mut count, 
+            std::mem::zeroed())
+        };
+
+        if result == ERROR_SUCCESS {
+            Ok(count)
+        } else {
+            Err(last_error())
+        }
+    }
+
+    pub fn enable_hid_service(&self, handle: &BluetoothRadioHandle) -> io::Result<()> {
+        use bluetoothapis::{BLUETOOTH_SERVICE_ENABLE, BluetoothSetServiceState};
+
+        const HID_GUID: GUID = GUID {Data1: 0x00001124, Data2: 0x0000, Data3: 0x1000, Data4: [0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB]};
+
+        let result = unsafe { BluetoothSetServiceState(handle.0, &self.0, &HID_GUID, BLUETOOTH_SERVICE_ENABLE)};
+
+        if result != ERROR_SUCCESS {
+            return Err(last_error())
+        } else {
+            Ok(())
         }
     }
 }
