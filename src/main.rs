@@ -28,19 +28,18 @@ fn main() -> std::io::Result<()> {
         device.enable_hid_service(&radio)?;
     }
 
-
     Ok(())
 }
 
 fn get_radio() -> Result<BluetoothRadioHandle> {
-   let radio = BluetoothRadioSearch::new().nth(0);
+    let radio = BluetoothRadioSearch::new().nth(0);
 
-   match radio {
-       None => {
-           exit("Bluetooth connector not found!");
-       },
-       Some(radio) => radio
-   }
+    match radio {
+        None => {
+            exit("Bluetooth connector not found!");
+        }
+        Some(radio) => radio,
+    }
 }
 
 fn get_device_info(settings: &Settings, radio: &BluetoothRadioHandle) -> BluetoothDeviceInfo {
