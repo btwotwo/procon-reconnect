@@ -54,6 +54,7 @@ fn get_device_info(settings: &Settings, radio: &BluetoothRadioHandle) -> Bluetoo
     match search {
         None => {
             eprint!("Procon address is not valid. Try to remove settings.json.");
+            std::io::stdin().read_line(&mut String::new()).unwrap();
             std::process::exit(1);
         }
 
