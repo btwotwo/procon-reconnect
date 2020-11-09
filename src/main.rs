@@ -13,7 +13,7 @@ fn main() -> std::io::Result<()> {
     println!("{:?}", device);
 
     if device.is_connected() {
-        eprint!("Procon is already connected. Exiting.");
+        exit("Pro Controller is already connected. Exiting.")
     }
 
     if device.is_remembered() {
@@ -37,8 +37,7 @@ fn get_radio() -> Result<BluetoothRadioHandle> {
 
    match radio {
        None => {
-           eprintln!("Bluetooth connector not found!");
-           std::process::exit(1)
+           exit("Bluetooth connector not found!");
        },
        Some(radio) => radio
    }
@@ -53,11 +52,15 @@ fn get_device_info(settings: &Settings, radio: &BluetoothRadioHandle) -> Bluetoo
 
     match search {
         None => {
-            eprint!("Procon address is not valid. Try to remove settings.json.");
-            std::io::stdin().read_line(&mut String::new()).unwrap();
-            std::process::exit(1);
+            exit("Procon address is not valid. Try to remove settings.json.");
         }
 
         Some(device) => device,
     }
+}
+
+fn exit(error: &str) -> ! {
+    eprintln!("Error: {}", error);
+    std::io::stdin().read_line(&mut String::new()).unwrap();
+    std::process::exit(1)
 }
