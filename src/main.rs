@@ -1,12 +1,14 @@
 mod settings;
+use std::io::Result;
+
 use settings::Settings;
 use winapi_bluetooth::device::*;
 use winapi_bluetooth::radio::*;
 
 fn main() -> std::io::Result<()> {
+    let radio = get_radio()?;
     let settings = Settings::init()?;
-    let mut device = get_device_info(&settings);
-    let radio = BluetoothRadioSearch::new().nth(0).unwrap()?;
+    let mut device = get_device_info(&settings, &radio);
 
     println!("{:?}", device);
 
@@ -30,11 +32,23 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-fn get_device_info(settings: &Settings) -> BluetoothDeviceInfo {
-    let params = BluetoothDeviceSearchParams::new(None).with_return_all();
+fn get_radio() -> Result<BluetoothRadioHandle> {
+   let radio = BluetoothRadioSearch::new().nth(0);
+
+   match radio {
+       None => {
+           eprintln!("Bluetooth connector not found!");
+           std::process::exit(1)
+       },
+       Some(radio) => radio
+   }
+}
+
+fn get_device_info(settings: &Settings, radio: &BluetoothRadioHandle) -> BluetoothDeviceInfo {
+    let params = BluetoothDeviceSearchParams::new(Some(radio)).with_return_all();
 
     let search = BluetoothDeviceSearch::new(params)
-        .map(|x| x.unwrap())
+        .filter_map(Result::ok)
         .find(|x| x.address() == settings.procon_address);
 
     match search {

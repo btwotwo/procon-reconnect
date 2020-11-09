@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_json;
-
 use winapi_bluetooth::device::*;
-use winapi_bluetooth::radio::*;
 
 use std::fs;
 use std::io;
@@ -30,10 +28,10 @@ impl Settings {
             Err(e) => match e.kind() {
                 std::io::ErrorKind::NotFound => {
                     let settings = first_time_launch();
-                    let file = std::fs::File::create(SETTINGS_FILE).unwrap();
+                    let file = std::fs::File::create(SETTINGS_FILE)?;
                     let buffer = io::BufWriter::new(file);
 
-                    serde_json::to_writer(buffer, &settings).unwrap();
+                    serde_json::to_writer(buffer, &settings)?;
 
                     Ok(settings)
                 }
@@ -50,7 +48,7 @@ fn first_time_launch() -> Settings {
     let devices =
         BluetoothDeviceSearch::new(BluetoothDeviceSearchParams::new(None).with_return_all());
 
-    let devices: Vec<BluetoothDeviceInfo> = devices.map(|x| x.unwrap()).collect();
+    let devices: Vec<BluetoothDeviceInfo> = devices.filter_map(Result::ok).collect();
 
     println!("Looks like that application is launched for the first time. Let's do some basic setup and save it.\n");
     println!("Please enter the index of Pro Controller displayed on your screen.");

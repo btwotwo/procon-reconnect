@@ -1,3 +1,4 @@
+use winapi::shared::ntdef::NULL;
 use super::winapi_imports::*;
 use super::last_error;
 use winapi::um::bluetoothapis::{HBLUETOOTH_RADIO_FIND, BLUETOOTH_RADIO_INFO};
@@ -140,7 +141,7 @@ impl Iterator for BluetoothRadioSearch {
     fn next(&mut self) -> Option<Self::Item> {
         match self.find_next() {
             Ok(res) => Some(Ok(res)),
-            Err(error) => match error.raw_os_error() {
+            Err(error) => match error.raw_os_error(){
                 Some(ERROR_NO_MORE_ITEMS) => None,
                 _ => Some(Err(error)),
             },
@@ -151,6 +152,10 @@ impl Iterator for BluetoothRadioSearch {
 impl Drop for BluetoothRadioSearch {
     fn drop(&mut self) {
         use winapi::um::bluetoothapis::BluetoothFindRadioClose;
+
+        if self.search == NULL {
+            return;
+        }
 
         let result = unsafe { BluetoothFindRadioClose(self.search) };
 

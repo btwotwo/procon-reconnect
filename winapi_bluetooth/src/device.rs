@@ -1,4 +1,5 @@
 use super::winapi_imports::*;
+use io::{Error, ErrorKind};
 use winapi::um::bluetoothapis::{BLUETOOTH_DEVICE_INFO, BLUETOOTH_DEVICE_SEARCH_PARAMS, HBLUETOOTH_DEVICE_FIND};
 use std::ffi::OsString;
 use std::os::windows::ffi::OsStringExt;
@@ -10,7 +11,7 @@ use super::last_error;
 pub struct BluetoothDeviceSearchParams(BLUETOOTH_DEVICE_SEARCH_PARAMS);
 
 impl BluetoothDeviceSearchParams {
-    pub fn new(handle: Option<BluetoothRadioHandle>) -> Self {
+    pub fn new(handle: Option<&BluetoothRadioHandle>) -> Self {
         use std::mem;
 
         let mut inner: BLUETOOTH_DEVICE_SEARCH_PARAMS = unsafe {mem::zeroed()};
@@ -93,9 +94,8 @@ impl BluetoothDeviceInfo {
 
 
     pub fn remove_device(&mut self) -> io::Result<()> {
-        match self.is_remembered() {
-            false => Err(io::Error::new(io::ErrorKind::InvalidInput, "Device is not remembered")),
-            true => match unsafe {bluetoothapis::BluetoothRemoveDevice(&self.address())} {
+        if self.is_remembered() {
+            match unsafe {bluetoothapis::BluetoothRemoveDevice(&self.address())} {
                 ERROR_SUCCESS => {
                     self.0.fConnected = FALSE;
                     self.0.fRemembered = FALSE;
@@ -104,8 +104,9 @@ impl BluetoothDeviceInfo {
                 },
                 _ => Err(last_error())
             }
+        } else {
+            Err(Error::new(ErrorKind::InvalidInput, "Device is not remembered"))
         }
-
     }
 
     pub fn authenticate_device(&mut self, handle: Option<&BluetoothRadioHandle>) -> io::Result<()> {
@@ -119,16 +120,19 @@ impl BluetoothDeviceInfo {
             None => unsafe {std::mem::zeroed()}
         };
 
-        match self.is_authenticated() {
-            true => Err(io::Error::new(io::ErrorKind::InvalidInput, "Device is already connected")),
-            false => match unsafe {bluetoothapis::BluetoothAuthenticateDevice(
+        if self.is_authenticated() {
+            Err(Error::new(ErrorKind::InvalidInput, "Device is already connected"))
+        } else {
+            let auth_result = unsafe {bluetoothapis::BluetoothAuthenticateDevice(
                 std::ptr::null_mut(), 
                 handle, 
                 &mut self.0,
                 passwd.as_mut_ptr(),
-                passwd.len() as u32)} {    
+                passwd.len() as u32)};
+
+            match auth_result {    
                     ERROR_SUCCESS => Ok(()),
-                    val => Err(io::Error::from_raw_os_error(val.try_into().unwrap()))
+                    val => Err(Error::from_raw_os_error(val.try_into().unwrap()))
                 }
         }
     }
@@ -152,12 +156,12 @@ impl BluetoothDeviceInfo {
     pub fn enable_hid_service(&self, handle: &BluetoothRadioHandle) -> io::Result<()> {
         use bluetoothapis::{BLUETOOTH_SERVICE_ENABLE, BluetoothSetServiceState};
 
-        const HID_GUID: GUID = GUID {Data1: 0x00001124, Data2: 0x0000, Data3: 0x1000, Data4: [0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB]};
+        const HID_GUID: GUID = GUID {Data1: 0x0000_1124, Data2: 0x0000, Data3: 0x1000, Data4: [0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB]};
 
         let result = unsafe { BluetoothSetServiceState(handle.0, &self.0, &HID_GUID, BLUETOOTH_SERVICE_ENABLE)};
 
         if result != ERROR_SUCCESS {
-            return Err(last_error())
+            Err(last_error())
         } else {
             Ok(())
         }
@@ -192,7 +196,8 @@ impl BluetoothDeviceSearch {
     }
 
     fn find_first(&mut self) -> io::Result<BluetoothDeviceInfo> {
-        use winapi::um::bluetoothapis::{BluetoothFindFirstDevice};
+        use winapi::um::bluetoothapis::BluetoothFindFirstDevice;
+        self.init = true;
 
         let mut bluetooth_info = get_blank_info();
 
