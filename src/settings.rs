@@ -52,6 +52,7 @@ fn first_time_launch() -> Settings {
 
     println!("Looks like that application is launched for the first time. Let's do some basic setup and save it.\n");
     println!("Please enter the index of Pro Controller displayed on your screen.");
+    println!();
 
     for (i, device) in devices.iter().enumerate() {
         println!("{}. {}", i, device.name().to_string_lossy());
