@@ -1,11 +1,10 @@
 use serde::{Deserialize, Serialize};
-use serde_json;
 use winapi_bluetooth::device::*;
 
 use std::fs;
 use std::io;
 
-const SETTINGS_FILE: &'static str = "settings.json";
+const SETTINGS_FILE: &str = "settings.json";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Settings {
@@ -20,8 +19,8 @@ impl Settings {
         match file {
             Ok(file) => {
                 let reader = io::BufReader::new(file);
-
                 let settings = serde_json::from_reader(reader)?;
+
                 Ok(settings)
             }
 

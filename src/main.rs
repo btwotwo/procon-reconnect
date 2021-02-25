@@ -6,8 +6,13 @@ use winapi_bluetooth::device::*;
 use winapi_bluetooth::radio::*;
 
 fn main() -> std::io::Result<()> {
+    println!("Initalizing...");
     let radio = get_radio()?;
+
+    println!("Found Bluetooth connector");
     let settings = Settings::init()?;
+
+    println!("Initialized settings");
     let mut device = get_device_info(&settings, &radio);
 
     println!("{:?}", device);
@@ -17,14 +22,19 @@ fn main() -> std::io::Result<()> {
     }
 
     if device.is_remembered() {
+        println!("Device is remembered. Removing device");
         device.remove_device()?;
+
+        println!("Device removed");
     }
 
     device.authenticate_device(Some(&radio))?;
+    println!("Device autheticated");
 
     let service_count = device.count_installed_services()?;
 
     if service_count == 0 {
+        println!("Enabling HID service...");
         device.enable_hid_service(&radio)?;
     }
 
@@ -32,7 +42,7 @@ fn main() -> std::io::Result<()> {
 }
 
 fn get_radio() -> Result<BluetoothRadioHandle> {
-    let radio = BluetoothRadioSearch::new().nth(0);
+    let radio = BluetoothRadioSearch::new().next();
 
     match radio {
         None => {
