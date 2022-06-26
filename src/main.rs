@@ -10,25 +10,32 @@ fn main() -> std::io::Result<()> {
     let radio = get_radio()?;
 
     println!("Found Bluetooth connector");
-    let settings = Settings::init()?;
+    let settings = Settings::init(&radio)?;
 
     println!("Initialized settings");
     let mut device = get_device_info(&settings, &radio);
 
-    println!("{:?}", device);
+    println!("Device found: {:?}", device);
 
+    print!("Checking if device is connected... ");
     if device.is_connected() {
         exit("Pro Controller is already connected. Exiting.")
+    } else {
+        println!("Device is not connected.")
     }
 
+    print!("Checking if device is remembered... ");
     if device.is_remembered() {
         println!("Device is remembered. Removing device");
         device.remove_device()?;
 
         println!("Device removed");
+    } else {
+        println!("Device is not remembered.")
     }
 
-    device.authenticate_device(Some(&radio))?;
+    println!("Authenticating device...");
+    device.authenticate_device(&radio)?;
     println!("Device autheticated");
 
     let service_count = device.count_installed_services()?;
@@ -36,19 +43,21 @@ fn main() -> std::io::Result<()> {
     if service_count == 0 {
         println!("Enabling HID service...");
         device.enable_hid_service(&radio)?;
+        println!("HID service enabled.")
     }
 
+    println!("Enjoy playing with your ProController!");
     Ok(())
 }
 
 fn get_radio() -> Result<BluetoothRadioHandle> {
-    let radio = BluetoothRadioSearch::new().next();
+    let radio = BluetoothRadioSearch::new().find_next();
 
     match radio {
-        None => {
+        Ok(radio_handle) => Ok(radio_handle),
+        Err(_) => {
             exit("Bluetooth connector not found!");
         }
-        Some(radio) => radio,
     }
 }
 
