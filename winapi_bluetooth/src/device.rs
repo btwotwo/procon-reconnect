@@ -109,23 +109,18 @@ impl BluetoothDeviceInfo {
         }
     }
 
-    pub fn authenticate_device(&mut self, handle: Option<&BluetoothRadioHandle>) -> io::Result<()> {
+    pub fn authenticate_device(&mut self, radio_handle: &BluetoothRadioHandle) -> io::Result<()> {
         use widestring::U16String;
         use std::convert::TryInto;
         
         let mut passwd = U16String::from_str("0000").into_vec();
-
-        let handle = match handle {
-            Some(handle) => handle.0, 
-            None => unsafe {std::mem::zeroed()}
-        };
 
         if self.is_authenticated() {
             Err(Error::new(ErrorKind::InvalidInput, "Device is already connected"))
         } else {
             let auth_result = unsafe {bluetoothapis::BluetoothAuthenticateDevice(
                 std::ptr::null_mut(), 
-                handle, 
+                radio_handle.0, 
                 &mut self.0,
                 passwd.as_mut_ptr(),
                 passwd.len() as u32)};
@@ -161,6 +156,7 @@ impl BluetoothDeviceInfo {
         let result = unsafe { BluetoothSetServiceState(handle.0, &self.0, &HID_GUID, BLUETOOTH_SERVICE_ENABLE)};
 
         if result != ERROR_SUCCESS {
+            eprintln!("{}", result);
             Err(last_error())
         } else {
             Ok(())
